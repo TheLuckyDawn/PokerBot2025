@@ -14,7 +14,6 @@ from eval7 import Card
 import random
 
 startRanking = 0
-opp_bids = []
 
 class Player(Bot):
     '''
@@ -126,9 +125,29 @@ class Player(Bot):
         my_contribution = STARTING_STACK - my_stack  # the number of chips you have contributed to the pot
         opp_contribution = STARTING_STACK - opp_stack  # the number of chips your opponent has contributed to the pot
 
+
+
         # very naive equity calculator
         # In theory we try and guess opponents hand but worse comes to worst we can
         # just test against a ton of random hands
+        # deck = eval7.Deck()
+        # deck.shuffle()
+        # random_hand = deck.deal(2)
+        # hand_range = eval7.HandRange(str(random_hand[0])[0] + str(random_hand[1])[0])
+
+        bet_pct = (opp_pip / STARTING_STACK) + street/10
+
+        range = None
+        if bet_pct > .9:
+            range = eval7.HandRange("KK+, AK+")
+        elif bet_pct > .8:
+            range = eval7.HandRange("77-88, T5s-T8s, A6o-A9o, K6o-K9o")
+        else:
+            range = eval7.HandRange("62s+, 52s+, 42s+, 32s, 62o+, 52o+, 42o+, 32o")
+
+        equity = eval7.py_hand_vs_range_monte_carlo(list(map(eval7.Card, my_cards)), range, list(map(eval7.Card, board_cards)), 200)
+
+
         deck = eval7.Deck()
         deck.shuffle()
         random_hand = deck.deal(2)
@@ -179,7 +198,7 @@ class Player(Bot):
         if equity < 0.5 and CallAction in legal_actions:
             print("call bc low equity")
             return CallAction()
-        
+
         if RaiseAction in legal_actions:
             print("raise action")
             min_cost = min_raise - my_pip  # the cost of a minimum bet/raise
