@@ -13,9 +13,11 @@ from skeleton.runner import parse_args, run_bot
 from eval7 import Card, HandRange
 import random
 
+r_number = 1
 startRanking = 0
 opp_bids = []
 opp_bets = []
+
 
 class Player(Bot):
     '''
@@ -68,6 +70,9 @@ class Player(Bot):
         Returns:
         Nothing.
         '''
+        global r_number
+        print("Round " + str(r_number))
+        r_number += 1
 
         
 
@@ -77,8 +82,6 @@ class Player(Bot):
         my_cards = round_state.hands[active]  # your cards
         my_stack = round_state.stacks[active]
         #big_blind = bool(active)  # True if you are the big blind
-        pass
-
         
 
     def handle_round_over(self, game_state, terminal_state, active):
@@ -99,6 +102,7 @@ class Player(Bot):
             opp_bids.append(opp_bid)
         if terminal_state.previous_state.stacks[1-active] != None:
             opp_bets.append(opp_bet)
+        print("")
 
     def get_action(self, game_state, round_state, active):
         '''
@@ -162,7 +166,6 @@ class Player(Bot):
         print("Equity: " + str(equity))
         if street == 0:
             startRanking = self.rate_start_hand(my_cards)
-            print(legal_actions)
             if BidAction in legal_actions:
                 print("bid")
                 card1 = Card(my_cards[0])

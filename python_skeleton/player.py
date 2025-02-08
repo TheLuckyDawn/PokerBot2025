@@ -102,7 +102,7 @@ class Player(Bot):
         if CheckAction in legal_actions:
             return CheckAction()
         elif BidAction in legal_actions:
-            return BidAction(20) 
+            return BidAction(0) 
         
         return CallAction()
 
