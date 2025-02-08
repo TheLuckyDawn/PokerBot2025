@@ -9,6 +9,11 @@ from skeleton.runner import parse_args, run_bot
 import random
 import math
 
+startRanking = 0
+opponent_bids = []
+opponent_hands = []
+opponent_hand_power = lambda x: 100
+
 
 class Player(Bot):
     '''
@@ -59,11 +64,26 @@ class Player(Bot):
         Nothing.
         '''
         #my_delta = terminal_state.deltas[active]  # your bankroll change from this round
-        #previous_state = terminal_state.previous_state  # RoundState before payoffs
+        previous_state = terminal_state.previous_state  # RoundState before payoffs
         #street = previous_state.street  # 0, 3, 4, or 5 representing when this round ended
-        #my_cards = previous_state.hands[active]  # your cards
-        #opp_cards = previous_state.hands[1-active]  # opponent's cards or [] if not revealed
-        pass
+        my_cards = previous_state.hands[active]  # your cards
+        opp_cards = previous_state.hands[1-active]  # opponent's cards or [] if not revealed
+
+        if opp_cards:
+            opponent_hands.append(self.rate_start_hand(opp_cards))
+        else:
+            # The opponent didn't show their hand so we remove what their bid that round was
+            opponent_bids.pop()
+
+        sum_x = sum(opponent_bids)
+        sum_y = sum(opponent_hands)
+        times = sum([opponent_hands[i] * opponent_bids[i] for i in range(len(opponent_hands))])
+        x_sq = sum([x**2 for x in opponent_bids])
+        y_sq = sum([y**2 for y in opponent_hands])
+        n = len(opponent_bids)
+        b = ((sum_y*x_sq) - (sum_x*times)) / (n*x_sq - sum_x**2)
+        m = ((n*times) - (sum_x*sum_y)) / (n*x_sq - sum_x**2)
+        opponent_hand_power = lambda bid: m*bid + b
 
     def get_action(self, game_state, round_state, active):
         '''
@@ -92,6 +112,11 @@ class Player(Bot):
         continue_cost = opp_pip - my_pip  # the number of chips needed to stay in the pot
         my_contribution = STARTING_STACK - my_stack  # the number of chips you have contributed to the pot
         opp_contribution = STARTING_STACK - opp_stack  # the number of chips your opponent has contributed to the pot
+        opp_power = None
+
+        if street == 3 and round_state.previous_state.stree == 0:
+            opp_power = opponent_hand_power(opp_bid)
+            opponent_bids.append(opp_bid)
 
         if RaiseAction in legal_actions:
            min_raise, max_raise = round_state.raise_bounds()  # the smallest and largest numbers of chips for a legal bet/raise
