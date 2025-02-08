@@ -144,8 +144,10 @@ class Player(Bot):
         # hand_range = eval7.HandRange(str(random_hand[0])[0] + str(random_hand[1])[0])
 
         bet_pct = 0
+        bet_pct_norm = 0
         if len(opp_bets) > 0:
             bet_pct = ((sum(opp_bets)/len(opp_bets)) / opp_contribution) + (street / 10)
+            bet_pct_norm = ((sum(opp_bets)/len(opp_bets)) / opp_contribution)
 
         range = None
         if bet_pct > .9:
@@ -158,12 +160,8 @@ class Player(Bot):
         equity = eval7.py_hand_vs_range_monte_carlo(list(map(eval7.Card, my_cards)), range, list(map(eval7.Card, board_cards)), 200)
 
 
-        deck = eval7.Deck()
-        deck.shuffle()
-        random_hand = deck.deal(2)
-        hand_range = eval7.HandRange(str(random_hand[0])[0] + str(random_hand[1])[0])
-        equity = eval7.py_hand_vs_range_monte_carlo(list(map(eval7.Card, my_cards)), hand_range, list(map(eval7.Card, board_cards)), 200)
         print("Equity: " + str(equity))
+        print("Bet Pct: "+ str(bet_pct) + ", " + str(bet_pct_norm))
         if street == 0:
             startRanking = self.rate_start_hand(my_cards)
             if BidAction in legal_actions:
@@ -194,6 +192,10 @@ class Player(Bot):
         if equity < 0.25 and FoldAction in legal_actions:
              print("fold late hand")
              return FoldAction()
+
+        if equity < 0.5 and bet_pct_norm > 1 and FoldAction in legal_actions:
+            print("Opp has good hand fold")
+            return FoldAction()
 
         #goes all in randomly 
         if RaiseAction in legal_actions and random.randint(1, 200) == 200:
