@@ -10,6 +10,7 @@ from skeleton.states import GameState, TerminalState, RoundState
 from skeleton.states import NUM_ROUNDS, STARTING_STACK, BIG_BLIND, SMALL_BLIND
 from skeleton.bot import Bot
 from skeleton.runner import parse_args, run_bot
+from eval7 import Card
 import random
 
 
@@ -128,6 +129,15 @@ class Player(Bot):
 
         
         return CallAction()
+    
+    def rate_start_hand(self, my_cards):
+        handRating = 0
+        isSameSuit = my_cards[0][1] == my_cards[1][1]
+        isPair = my_cards[0][0] == my_cards[1][0]
+        card1 = Card(my_cards[0])
+        card2 = Card(my_cards[1])
+        
+        return handRating
 
 
 if __name__ == '__main__':
