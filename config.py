@@ -3,8 +3,8 @@
 PLAYER_1_NAME = 'J team bot'
 PLAYER_1_PATH = './botFolder'
 # NO TRAILING SLASHES ARE ALLOWED IN PATHS
-PLAYER_2_NAME = 'Python Skeleton'
-PLAYER_2_PATH = './python_skeleton'
+PLAYER_2_NAME = 'J team bot 2'
+PLAYER_2_PATH = './botFolder'
 # GAME PROGRESS IS RECORDED HERE
 GAME_LOG_FILENAME = 'gamelog'
 # PLAYER_LOG_SIZE_LIMIT IS IN BYTES

@@ -164,14 +164,7 @@ class Player(Bot):
         print("Bet Pct: "+ str(bet_pct) + ", " + str(bet_pct_norm))
         if street == 0:
             startRanking = self.rate_start_hand(my_cards)
-            if BidAction in legal_actions:
-                print("bid")
-                card1 = Card(my_cards[0])
-                card2 = Card(my_cards[1])
-                if len(opp_bids) > 0 and (abs(card2.rank - card1.rank) < 5 and card2.rank != card1.rank) or card1.suit == card2.suit:
-                    return BidAction(min(30, floor(sum(opp_bid)/len(opp_bid))+1))
-                return BidAction(1)
-            elif (startRanking < 600) and CheckAction in legal_actions:
+            if (startRanking < 600) and CheckAction in legal_actions:
                 print("checked bad hand first")
                 return CheckAction()
             elif (startRanking < 600) and FoldAction in legal_actions:
@@ -221,11 +214,14 @@ class Player(Bot):
         elif CheckAction in legal_actions:
             print("check")
             return CheckAction()
-        elif BidAction in legal_actions:
-            print("bid")
-            return BidAction(2)
-
-
+        if BidAction in legal_actions:
+            card1 = Card(my_cards[0])
+            card2 = Card(my_cards[1])
+            if len(opp_bids) > 0 and ((abs(card2.rank - card1.rank) < 5 and card2.rank != card1.rank) or card1.suit == card2.suit):
+                print("bid " + str(min(30, floor(sum(opp_bids)/len(opp_bids))+1)))
+                return BidAction(min(30, floor(sum(opp_bids)/len(opp_bids))+1))
+            print("bid 1")
+            return BidAction(1)
 
         print("default call")
         return CallAction()

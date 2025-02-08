@@ -7,6 +7,7 @@ from skeleton.states import NUM_ROUNDS, STARTING_STACK, BIG_BLIND, SMALL_BLIND
 from skeleton.bot import Bot
 from skeleton.runner import parse_args, run_bot
 import random
+import math
 
 
 class Player(Bot):
@@ -98,7 +99,7 @@ class Player(Bot):
            max_cost = max_raise - my_pip  # the cost of a maximum bet/raise
         
         if RaiseAction in legal_actions and random.random() < 0.99:
-            return RaiseAction( max_raise)
+            return RaiseAction(max(math.floor(max_raise*random.random()), min_raise))
         if CheckAction in legal_actions:
             return CheckAction()
         elif BidAction in legal_actions:
