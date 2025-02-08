@@ -1,6 +1,10 @@
 '''
 Simple example pokerbot, written in Python.
 '''
+from math import floor
+
+import eval7
+
 from skeleton.actions import FoldAction, CallAction, CheckAction, RaiseAction, BidAction
 from skeleton.states import GameState, TerminalState, RoundState
 from skeleton.states import NUM_ROUNDS, STARTING_STACK, BIG_BLIND, SMALL_BLIND
@@ -92,17 +96,36 @@ class Player(Bot):
         my_contribution = STARTING_STACK - my_stack  # the number of chips you have contributed to the pot
         opp_contribution = STARTING_STACK - opp_stack  # the number of chips your opponent has contributed to the pot
 
-        if RaiseAction in legal_actions:
-           min_raise, max_raise = round_state.raise_bounds()  # the smallest and largest numbers of chips for a legal bet/raise
-           min_cost = min_raise - my_pip  # the cost of a minimum bet/raise
-           max_cost = max_raise - my_pip  # the cost of a maximum bet/raise
-        
-        if RaiseAction in legal_actions and random.random() < 0.99:
-            return RaiseAction( max_raise)
-        if CheckAction in legal_actions:
+
+        # very naive equity calculator
+        # In theory we try and guess opponents hand but worse comes to worst we can
+        # just test against a ton of random hands
+        deck = eval7.Deck()
+        deck.shuffle()
+        random_hand = deck.deal(2)
+        hand_range = eval7.HandRange(str(random_hand[0])[0] + str(random_hand[1])[0])
+        equity = eval7.py_hand_vs_range_monte_carlo(list(map(eval7.Card, my_cards)), hand_range, list(map(eval7.Card, board_cards)), 200)
+        # if equity < 0.25 and FoldAction in legal_actions:
+        #     return FoldAction()
+
+        if equity < 0.35 and CheckAction in legal_actions:
             return CheckAction()
+
+        if equity < 0.5 and CallAction in legal_actions:
+            return CallAction()
+        elif RaiseAction in legal_actions:
+            min_raise, max_raise = round_state.raise_bounds()  # the smallest and largest numbers of chips for a legal bet/raise
+            min_cost = min_raise - my_pip  # the cost of a minimum bet/raise
+            max_cost = max_raise - my_pip  # the cost of a maximum bet/raise
+            return RaiseAction(floor(0.3 * max_raise))
+
+        if CheckAction in legal_actions:
+            return CheckAction
         elif BidAction in legal_actions:
-            return BidAction(0) 
+            return BidAction(2)
+
+
+
         
         return CallAction()
 
