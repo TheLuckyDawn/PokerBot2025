@@ -14,6 +14,7 @@ from eval7 import Card
 import random
 
 startRanking = 0
+opp_bids = []
 
 class Player(Bot):
     '''
@@ -91,7 +92,10 @@ class Player(Bot):
         Returns:
         Nothing.
         '''
-        pass
+        opp_bid = terminal_state.bids[1-active]  # How much opponent bid previously (available only after auction)
+
+        if opp_bid != None:
+            opp_bids.append(opp_bid)
 
     def get_action(self, game_state, round_state, active):
         '''
@@ -130,15 +134,21 @@ class Player(Bot):
         random_hand = deck.deal(2)
         hand_range = eval7.HandRange(str(random_hand[0])[0] + str(random_hand[1])[0])
         equity = eval7.py_hand_vs_range_monte_carlo(list(map(eval7.Card, my_cards)), hand_range, list(map(eval7.Card, board_cards)), 200)
-        
+        print("Equity: " + str(equity))
         if street == 0:
             startRanking = self.rate_start_hand(my_cards)
             print(legal_actions)
             if BidAction in legal_actions:
                 print("bid")
+                card1 = Card(my_cards[0])
+                card2 = Card(my_cards[1])
+                if len(opp_bids) > 0 and (abs(card2.rank - card1.rank) < 5 and card2.rank != card1.rank) or card1.suit == card2.suit:
+                    return BidAction(min(30, floor(sum(opp_bid)/len(opp_bid))+1))
                 return BidAction(1)
+            elif (startRanking < 600) and CheckAction in legal_actions:
+                print("checked bad hand first")
+                return CheckAction()
             elif (startRanking < 600) and FoldAction in legal_actions:
-                print("folded here first")
                 return FoldAction()
             elif (startRanking > 2000) and RaiseAction in legal_actions and my_contribution < my_stack*0.2:
                 print("raised by " + str(max(min_raise, min(floor(max_raise*(startRanking/4550)*0.7), max_raise))))
@@ -167,15 +177,18 @@ class Player(Bot):
             return CheckAction()
 
         if equity < 0.5 and CallAction in legal_actions:
-            print("call")
+            print("call bc low equity")
             return CallAction()
-        elif RaiseAction in legal_actions:
+        
+        if RaiseAction in legal_actions:
             print("raise action")
             min_cost = min_raise - my_pip  # the cost of a minimum bet/raise
             max_cost = max_raise - my_pip  # the cost of a maximum bet/raise
             return RaiseAction(max(min_raise, floor(0.3 * max_raise)))
-
-        if CheckAction in legal_actions:
+        elif CallAction in legal_actions:
+            print("call bc cant raise")
+            return CallAction()
+        elif CheckAction in legal_actions:
             print("check")
             return CheckAction()
         elif BidAction in legal_actions:
