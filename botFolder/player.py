@@ -10,10 +10,12 @@ from skeleton.states import GameState, TerminalState, RoundState
 from skeleton.states import NUM_ROUNDS, STARTING_STACK, BIG_BLIND, SMALL_BLIND
 from skeleton.bot import Bot
 from skeleton.runner import parse_args, run_bot
-from eval7 import Card
+from eval7 import Card, HandRange
 import random
 
 startRanking = 0
+opp_bids = []
+opp_bets = []
 
 class Player(Bot):
     '''
@@ -92,9 +94,11 @@ class Player(Bot):
         Nothing.
         '''
         opp_bid = terminal_state.bids[1-active]  # How much opponent bid previously (available only after auction)
-
+        opp_bet = STARTING_STACK - terminal_state.previous_state.stacks[1-active]
         if opp_bid != None:
             opp_bids.append(opp_bid)
+        if terminal_state.previous_state.stacks[1-active] != None:
+            opp_bets.append(opp_bet)
 
     def get_action(self, game_state, round_state, active):
         '''
@@ -135,7 +139,9 @@ class Player(Bot):
         # random_hand = deck.deal(2)
         # hand_range = eval7.HandRange(str(random_hand[0])[0] + str(random_hand[1])[0])
 
-        bet_pct = (opp_pip / STARTING_STACK) + street/10
+        bet_pct = 0
+        if len(opp_bets) > 0:
+            bet_pct = ((sum(opp_bets)/len(opp_bets)) / opp_contribution) + (street / 10)
 
         range = None
         if bet_pct > .9:
